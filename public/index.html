@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock & Bond Market Correlation Simulator</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f7fa;
+      color: #333;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    h1, h2, h3 {
+      margin-top: 0;
+      color: #2d3748;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .description {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #4a5568;
+    }
+    .mode-info {
+      background-color: #ebf8ff;
+      border: 1px solid #bee3f8;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      text-align: center;
+      font-size: 14px;
+    }
+    .bold {
+      font-weight: bold;
+    }
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+    .btn-primary {
+      background-color: #3182ce;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #2c5282;
+    }
+    .btn-secondary {
+      background-color: #a0aec0;
+      color: white;
+    }
+    .btn-secondary:hover {
+      background-color: #718096;
+    }
+    .btn-green {
+      background-color: #38a169;
+      color: white;
+    }
+    .btn-green:hover {
+      background-color: #2f855a;
+    }
+    .btn-red {
+      background-color: #e53e3e;
+      color: white;
+    }
+    .btn-red:hover {
+      background-color: #c53030;
+    }
+    .btn-disabled {
+      background-color: #cbd5e0;
+      color: #718096;
+      cursor: not-allowed;
+    }
+    .simulation-status {
+      background-color: #ebf8ff;
+      border: 1px solid #bee3f8;
+      padding: 8px;
+      border-radius: 4px;
+      margin-top: 12px;
+      text-align: center;
+      font-size: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    @media (min-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr 2fr;
+      }
+    }
+    .panel {
+      background-color: white;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 16px;
+    }
+    .variable-control {
+      margin-bottom: 16px;
+    }
+    .variable-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .learn-btn {
+      font-size: 12px;
+      color: #3182ce;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+    .learn-btn:hover {
+      color: #2c5282;
+    }
+    .range-input {
+      width: 100%;
+    }
+    .variable-info {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 4px;
+    }
+    .game-controls {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 24px;
+    }
+    .chart-container {
+      height: 300px;
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .chart {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .market-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .stat-card {
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .sp500-card {
+      background-color: #ebf8ff;
+    }
+    .bond-card {
+      background-color: #f0fff4;
+    }
+    .card-title {
+      font-weight: bold;
+      margin-bottom: 4px;
+      color: #2c5282;
+    }
+    .bond-card .card-title {
+      color: #2f855a;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .stat-change {
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    .positive-change {
+      color: #38a169;
+    }
+    .negative-change {
+      color: #e53e3e;
+    }
+    .correlation-box {
+      background-color: #f7fafc;
+      padding: 12px;
+      border-radius: 4px;
+      margin-top: 16px;
+    }
+    .portfolio {
+      margin-bottom: 20px;
+      margin-top: 20px;
+    }
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .portfolio-card {
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .cash-card {
+      background-color: #ebf8ff;
+    }
+    .stock-card {
+      background-color: #f0fff4;
+    }
+    .bond-card {
+      background-color: #faf5ff;
+    }
+    .cash-card .card-title {
+      color: #2c5282;
+    }
+    .stock-card .card-title {
+      color: #2f855a;
+    }
+    .bond-card .card-title {
+      color: #6b46c1;
+    }
+    .total-value {
+      background-color: #fffaf0;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+    .total-value .card-title {
+      color: #c05621;
+    }
+    .trading-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .trading-panel {
+      background-color: #f7fafc;
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .trade-form {
+      display: flex;
+      margin-bottom: 8px;
+    }
+    .trade-input {
+      flex-grow: 1;
+      padding: 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px 0 0 4px;
+    }
+    .trade-btn {
+      padding: 8px 12px;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+    .buy-sp-btn {
+      background-color: #3182ce;
+    }
+    .buy-bond-btn {
+      background-color: #6b46c1;
+      border-radius: 0 4px 4px 0;
+    }
+    .sell-sp-btn {
+      background-color: #3182ce;
+    }
+    .sell-bond-btn {
+      background-color: #6b46c1;
+      border-radius: 0 4px 4px 0;
+    }
+    .price-info {
+      font-size: 14px;
+      color: #718096;
+    }
+    .events {
+      background-color: #fffbeb;
+      border: 1px solid #fbd38d;
+      padding: 16px;
+      border-radius: 6px;
+      margin-top: 16px;
+    }
+    .event-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #c05621;
+      margin-bottom: 8px;
+    }
+    .event-desc {
+      color: #7b341e;
+    }
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal {
+      background-color: white;
+      padding: 24px;
+      border-radius: 8px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .modal-title {
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+    .modal-content {
+      margin-bottom: 20px;
+    }
+    .modal-close {
+      padding: 8px 16px;
+      background-color: #3182ce;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .cycle-indicator {
+      background-color: #ebf8ff;
+      border: 1px solid #bee3f8;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 16px;
+    }
+    .cycle-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #2c5282;
+      margin-bottom: 8px;
+    }
+    .progress-bar {
+      width: 100%;
+      background-color: #e2e8f0;
+      border-radius: 9999px;
+      height: 8px;
+      margin-bottom: 4px;
+    }
+    .progress-value {
+      height: 100%;
+      border-radius: 9999px;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+    .cycle-description {
+      font-size: 14px;
+      color: #718096;
+      margin-top: 8px;
+    }
+    .transaction-history {
+      margin-top: 16px;
+    }
+    .transaction-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .transaction-table th {
+      background-color: #f7fafc;
+      font-weight: bold;
+      text-align: left;
+      padding: 8px;
+    }
+    .transaction-table td {
+      padding: 8px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .transaction-table .buy {
+      color: #e53e3e;
+    }
+    .transaction-table .sell {
+      color: #38a169;
+    }
+    .variable-change {
+      margin-left: 8px;
+    }
+    .arrow-up {
+      color: #e53e3e;
+    }
+    .arrow-down {
+      color: #38a169;
+    }
+    .error-message {
+      background-color: #fed7d7;
+      color: #c53030;
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+      display: none;
+    }
+    .fallback-chart {
+      width: 100%;
+      height: 300px;
+      background-color: #f7fafc;
+      border: 1px dashed #a0aec0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #4a5568;
+      font-size: 14px;
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    
+    /* Timer styles */
+    .timer-container {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .timer-label {
+      font-size: 14px;
+      color: #4a5568;
+      margin-bottom: 5px;
+    }
+    .timer-progress {
+      width: 100%;
+      height: 6px;
+      background-color: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 5px;
+    }
+    .timer-bar {
+      height: 100%;
+      background-color: #3182ce;
+      border-radius: 3px;
+      transition: width 1s linear;
+    }
+    .timer-text {
+      font-size: 14px;
+      font-weight: bold;
+      color: #2c5282;
+    }
+    
+    /* Global Timer */
+    .global-timer {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: rgba(49, 130, 206, 0.95);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      z-index: 100;
+      display: none;
+    }
+    .global-timer-label {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .global-timer-progress {
+      width: 160px;
+      height: 8px;
+      background-color: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 5px;
+    }
+    .global-timer-bar {
+      height: 100%;
+      background-color: white;
+      border-radius: 4px;
+      transition: width 1s linear;
+    }
+    .global-timer-text {
+      font-size: 16px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Stock & Bond Market Correlation Simulator</h1>
+    <p class="description">Learn the relationships between economic variables and markets while managing your portfolio</p>
+    
+    <!-- Error message container -->
+    <div id="error-message" class="error-message"></div>
+    
+    <!-- Mode selection and info -->
+    <div id="mode-info" class="mode-info" style="display: none;">
+      <p><span class="bold">Dynamic Market Mode:</span> Economic variables change automatically based on market conditions and interact realistically with each other. Use auto-simulation to watch the economy evolve in real-time!</p>
+    </div>
+    
+    <!-- Game modes -->
+    <div class="buttons">
+      <button id="sandbox-btn" class="btn btn-primary">Sandbox Mode</button>
+      <button id="challenge-btn" class="btn btn-secondary">Challenge Mode</button>
+      <button id="portfolio-toggle" class="btn btn-green">Hide Portfolio</button>
+    </div>
+    
+    <!-- Simulation controls -->
+    <div class="buttons">
+      <button id="simulation-toggle" class="btn btn-green">Start Auto Simulation</button>
+      <div>
+        <span style="margin-right: 8px; font-size: 14px;">Speed:</span>
+        <button id="slow-speed" class="btn btn-secondary">Slow</button>
+        <button id="normal-speed" class="btn btn-primary">Normal</button>
+        <button id="fast-speed" class="btn btn-secondary">Fast</button>
+        <button id="very-fast-speed" class="btn btn-secondary">Very Fast</button>
+      </div>
+    </div>
+    
+    <!-- Main game grid -->
+    <div class="grid">
+      <!-- Economic variables panel -->
+      <div class="panel">
+        <h2>Economic Variables</h2>
+        
+        <div class="variable-control">
+          <div class="variable-label">
+            <label id="interest-rate-label">Interest Rate: 4.75%</label>
+            <button class="learn-btn" data-explanation="interestRates">Learn Impact</button>
+          </div>
+          <input id="interest-rate-slider" type="range" min="0" max="8" step="0.25" value="4.75" class="range-input">
+          <div id="interest-rate-info" class="variable-info"></div>
+        </div>
+        
+        <div class="variable-control">
+          <div class="variable-label">
+            <label id="inflation-label">Inflation: 3.2%</label>
+            <button class="learn-btn" data-explanation="inflation">Learn Impact</button>
+          </div>
+          <input id="inflation-slider" type="range" min="0" max="10" step="0.25" value="3.2" class="range-input">
+          <div id="inflation-info" class="variable-info"></div>
+        </div>
+        
+        <div class="variable-control">
+          <div class="variable-label">
+            <label id="growth-label">Economic Growth: 2.2%</label>
+            <button class="learn-btn" data-explanation="economicGrowth">Learn Impact</button>
+          </div>
+          <input id="growth-slider" type="range" min="-2" max="6" step="0.25" value="2.2" class="range-input">
+          <div id="growth-info" class="variable-info"></div>
+        </div>
+        
+        <div class="variable-control">
+          <div class="variable-label">
+            <label id="sentiment-label">Risk Sentiment: 3.5 (Neutral)</label>
+            <button class="learn-btn" data-explanation="riskSentiment">Learn Impact</button>
+          </div>
+          <input id="sentiment-slider" type="range" min="0" max="5" step="0.25" value="3.5" class="range-input">
+          <div id="sentiment-info" class="variable-info"></div>
+        </div>
+        
+        <div class="variable-control">
+          <div class="variable-label">
+            <label id="policy-label">Monetary Policy: (Tight)</label>
+            <button class="learn-btn" data-explanation="monetaryPolicy">Learn Impact</button>
+          </div>
+          <input id="policy-slider" type="range" min="-5" max="5" step="0.25" value="2" class="range-input">
+          <div id="policy-info" class="variable-info"></div>
+        </div>
+        
+        <div class="game-controls">
+          <button id="next-month-btn" class="btn btn-primary">Next Month</button>
+          <button id="reset-btn" class="btn btn-secondary">Reset</button>
+        </div>
+        
+        <div id="simulation-status" class="simulation-status" style="display: none;">
+          <p><span class="bold">Auto-Simulation Active</span> - 2 months per minute</p>
+        </div>
+      </div>
+      
+      <!-- Market visualization panel -->
+      <div class="panel">
+        <h2 id="month-display">Market Performance (Month 1)</h2>
+        
+        <div class="chart-container">
+          <canvas id="market-chart" class="chart"></canvas>
+          <div id="fallback-chart" class="fallback-chart" style="display: none;">
+            Chart unavailable. Please check browser compatibility or try a different browser.
+          </div>
+        </div>
+        
+        <div class="market-stats">
+          <div class="stat-card sp500-card">
+            <div class="card-title">S&P 500 Index</div>
+            <div id="sp500-value" class="stat-value">5,510</div>
+            <div id="sp500-change" class="stat-change"></div>
+          </div>
+          
+          <div class="stat-card bond-card">
+            <div class="card-title">10-Year Treasury</div>
+            <div class="price-label">Price Index:</div>
+            <div id="bond-value" class="stat-value">100.00</div>
+            <div class="price-label">Yield:</div>
+            <div id="bond-yield" class="stat-value">4.75%</div>
+            <div id="bond-change" class="stat-change"></div>
+          </div>
+        </div>
+        
+        <div id="correlation-box" class="correlation-box" style="display: none;">
+          <h3>Current Correlation:</h3>
+          <p id="correlation-text"></p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Economic cycle indicator -->
+    <div id="cycle-indicator" class="cycle-indicator" style="display: none;">
+      <h3 class="cycle-title">Current Economic Cycle</h3>
+      <div class="progress-bar">
+        <div id="cycle-progress" class="progress-value" style="width: 50%; background-color: #48bb78;"></div>
+      </div>
+      <div class="progress-label">
+        <span>Recession</span>
+        <span id="cycle-stage">Growth</span>
+        <span>Expansion</span>
+      </div>
+      <p id="cycle-description" class="cycle-description">Healthy economic growth providing positive environment for risk assets</p>
+    </div>
+    
+    <!-- Event notification -->
+    <div id="event-notification" class="events" style="display: none;">
+      <h3 id="event-title" class="event-title"></h3>
+      <p id="event-description" class="event-desc"></p>
+      <button id="event-explanation-btn" class="btn btn-primary">Understand Impact</button>
+    </div>
+    
+    <!-- Portfolio section -->
+    <div id="portfolio" class="portfolio">
+      <h2>Your Investment Portfolio</h2>
+      
+      <div class="portfolio-grid">
+        <div class="portfolio-card cash-card">
+          <div class="card-title">Cash</div>
+          <div id="cash-value" class="stat-value">$100,000</div>
+        </div>
+        
+        <div class="portfolio-card stock-card">
+          <div class="card-title">S&P 500 Holdings</div>
+          <div id="stock-shares" class="stat-value">0.00 shares</div>
+          <div id="stock-worth" class="stat-change">Worth: $0</div>
+        </div>
+        
+        <div class="portfolio-card bond-card">
+          <div class="card-title">10-Year Treasury Bonds</div>
+          <div id="bond-units" class="stat-value">0.00 units</div>
+          <div id="bond-worth" class="stat-change">Worth: $0</div>
+        </div>
+      </div>
+      
+      <div class="total-value">
+        <div class="card-title">Total Portfolio Value</div>
+        <div id="total-portfolio" class="stat-value">$100,000</div>
+        <div id="portfolio-change" class="stat-change"></div>
+      </div>
+      
+      <div class="trading-grid">
+        <div class="trading-panel">
+          <h3>Buy</h3>
+          <div class="trade-form">
+            <input id="buy-input" type="number" placeholder="Amount" class="trade-input">
+            <button id="buy-sp-btn" class="trade-btn buy-sp-btn">Buy S&P</button>
+            <button id="buy-bond-btn" class="trade-btn buy-bond-btn">Buy Bonds</button>
+          </div>
+          <div id="buy-price-info" class="price-info">
+            S&P 500: $5,510 per share<br>
+            10-Year Treasury: $10,000 per unit
+          </div>
+        </div>
+        
+        <div class="trading-panel">
+          <h3>Sell</h3>
+          <div class="trade-form">
+            <input id="sell-input" type="number" placeholder="Amount" class="trade-input">
+            <button id="sell-sp-btn" class="trade-btn sell-sp-btn">Sell S&P</button>
+            <button id="sell-bond-btn" class="trade-btn sell-bond-btn">Sell Bonds</button>
+          </div>
+          <div id="holdings-info" class="price-info">
+            You own: 0.00 S&P shares, 0.00 Treasury units
+          </div>
+        </div>
+      </div>
+      
+      <div id="transaction-history" class="transaction-history" style="display: none;">
+        <h3>Recent Transactions</h3>
+        <div style="max-height: 150px; overflow-y: auto;">
+          <table class="transaction-table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Type</th>
+                <th>Asset</th>
+                <th>Amount</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="transactions-body">
+              <!-- Transactions will be added here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Explanation Modal -->
+    <div id="explanation-modal" class="modal-overlay" style="display: none;">
+      <div class="modal">
+        <h3 class="modal-title">Market Correlation Explained</h3>
+        <p id="explanation-text" class="modal-content"></p>
+        <button id="modal-close" class="modal-close">Close</button>
+      </div>
+    </div>
+    
+    <!-- Global Timer (visible anywhere on the page) -->
+    <div id="global-timer" class="global-timer">
+      <div class="global-timer-label">Next Update In:</div>
+      <div class="global-timer-progress">
+        <div id="global-timer-bar" class="global-timer-bar" style="width: 100%;"></div>
+      </div>
+      <div id="global-timer-text" class="global-timer-text">30s</div>
+    </div>
+  </div>
+
+  <!-- Main application script - using ES modules -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
